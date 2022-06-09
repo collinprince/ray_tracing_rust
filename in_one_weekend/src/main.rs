@@ -1,3 +1,4 @@
+mod camera;
 mod color;
 mod hittable;
 mod hittable_list;
@@ -6,20 +7,26 @@ mod rtweekend;
 mod sphere;
 mod vec3;
 
+use camera::Camera;
 use color::write_color;
 use hittable::Hittable;
 use hittable_list::HittableList;
 use ray::Ray;
-use rtweekend::INFINITY;
+use rtweekend::{random_f64, INFINITY};
 use sphere::Sphere;
-use vec3::{unit_vector, Color, Point3, Vec3};
+use vec3::{random_unit_vector, unit_vector, Color, Point3, Vec3};
 
 use std::io::{self, Write};
 
-fn ray_color(r: &Ray, world: &HittableList) -> Color {
-    let mut rec: hittable::HitRecord = hittable::HitRecord::new();
-    if world.hit(r, 0.0, INFINITY, &mut rec) {
-        return 0.5 * (rec.normal + Color::new().set_values(1.0, 1.0, 1.0));
+fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color {
+    if depth <= 0 {
+        return Color::new().set_values(0.0, 0.0, 0.0);
+    }
+
+    if let Some(rec) = world.hit(r, 0.001, INFINITY) {
+        let target: Point3 = rec.p + rec.normal + random_unit_vector();
+        let reflected_ray: Ray = Ray::new().set_fields(rec.p, target - rec.p);
+        return 0.5 * ray_color(&reflected_ray, world, depth - 1);
     }
     let unit_dir: Vec3 = unit_vector(r.direction());
     let t = 0.5 * (unit_dir.y() + 1.0);
@@ -28,15 +35,11 @@ fn ray_color(r: &Ray, world: &HittableList) -> Color {
 
 fn main() {
     // image
-    let aspect_ratio = 16.0 / 9.0;
-    let image_width: i32 = 400;
-    let image_height: i32 = (image_width as f64 / aspect_ratio) as i32;
-
-    // camera
-    let viewport_height: f64 = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
+    const ASPECT_RATIO: f64 = 16.0 / 9.0;
+    const IMAGE_WIDTH: i32 = 400;
+    const IMAGE_HEIGHT: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i32;
+    const SAMPLES_PER_PIXEL: i32 = 100;
+    const MAX_DEPTH: i32 = 50;
     // world
     let mut world: HittableList = HittableList::new();
     world.add(Box::new(
@@ -47,27 +50,24 @@ fn main() {
         100.0,
     )));
 
-    let origin = Point3::new();
-    let horizontal = Vec3::new().set_values(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new().set_values(0.0, viewport_height, 0.0);
-    let lower_left_corner =
-        origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new().set_values(0.0, 0.0, focal_length);
+    // camera
+    let cam: Camera = Camera::new();
 
     // render
-    print!("P3\n{} {}\n255\n", image_width, image_height);
+    print!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
 
-    for j in (0..image_height).rev() {
+    for j in (0..IMAGE_HEIGHT).rev() {
         eprint!("\rScanlines remaining: {j} ");
         io::stderr().flush().unwrap();
-        for i in 0..image_width {
-            let u: f64 = (i as f64) / ((image_width - 1) as f64);
-            let v: f64 = (j as f64) / ((image_height - 1) as f64);
-            let r: Ray = Ray::new().set_fields(
-                origin,
-                lower_left_corner + u * horizontal + v * vertical - origin,
-            );
-            let pixel_color: Color = ray_color(&r, &world);
-            write_color(pixel_color);
+        for i in 0..IMAGE_WIDTH {
+            let mut pixel_color: Color = Color::new();
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u: f64 = ((i as f64) + random_f64()) / ((IMAGE_WIDTH - 1) as f64);
+                let v: f64 = ((j as f64) + random_f64()) / ((IMAGE_HEIGHT - 1) as f64);
+                let r: Ray = cam.get_ray(u, v);
+                pixel_color += ray_color(&r, &world, MAX_DEPTH);
+            }
+            write_color(pixel_color, SAMPLES_PER_PIXEL);
         }
     }
     eprintln!("\nDone.");

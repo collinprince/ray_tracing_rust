@@ -19,16 +19,22 @@ impl HitRecord {
         }
     }
 
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vec3) {
-        self.front_face = dot(&r.direction(), outward_normal) < 0.0;
+    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
+        self.front_face = dot(&r.direction(), &outward_normal) < 0.0;
         self.normal = if self.front_face {
-            *outward_normal
+            outward_normal
         } else {
-            -(*outward_normal)
+            -outward_normal
         };
+    }
+    pub fn copy_from(&mut self, hr: &HitRecord) {
+        self.p = hr.p;
+        self.normal = hr.normal;
+        self.t = hr.t;
+        self.front_face = hr.front_face;
     }
 }
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }

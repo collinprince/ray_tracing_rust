@@ -199,4 +199,24 @@ mod tests {
         assert_eq!(unit_v, result);
         assert_eq!(unit_v.length(), 1.0);
     }
+
+    #[test]
+    fn random_vector_test() {
+        let v = Vec3::random();
+        let pred = |x| x >= -1.0 && x < 1.0;
+        assert_eq!(true, pred(v.e[0]));
+        assert_eq!(true, pred(v.e[1]));
+        assert_eq!(true, pred(v.e[2]));
+    }
+
+    #[test]
+    fn add_equals() {
+        let mut v: Vec3 = Vec3::new();
+        for i in 0..100 {
+            v += Vec3::new().set_values(i as f64, i as f64, i as f64);
+        }
+        assert_eq!(v.e[0], (100 * 49 + 50) as f64);
+        assert_eq!(v.e[1], (100 * 49 + 50) as f64);
+        assert_eq!(v.e[2], (100 * 49 + 50) as f64);
+    }
 }

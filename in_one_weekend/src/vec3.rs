@@ -1,3 +1,5 @@
+use crate::rtweekend::{random_f64, random_f64_in_range};
+
 use std::fmt;
 use std::ops;
 
@@ -17,6 +19,18 @@ impl Vec3 {
 
     pub fn set_values(self, e0: f64, e1: f64, e2: f64) -> Vec3 {
         Vec3 { e: [e0, e1, e2] }
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3::new().set_values(random_f64(), random_f64(), random_f64())
+    }
+
+    pub fn random_in_range(range: std::ops::Range<f64>) -> Vec3 {
+        Vec3::new().set_values(
+            random_f64_in_range(range.clone()),
+            random_f64_in_range(range.clone()),
+            random_f64_in_range(range),
+        )
     }
 }
 
@@ -170,4 +184,19 @@ pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
 
 pub fn unit_vector(v: Vec3) -> Vec3 {
     v / v.length()
+}
+
+pub fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let p: Vec3 = Vec3::random_in_range(-1.0..1.0);
+        if p.length_squared() >= 1.0 {
+            continue;
+        } else {
+            return p;
+        }
+    }
+}
+
+pub fn random_unit_vector() -> Vec3 {
+    unit_vector(random_in_unit_sphere())
 }
