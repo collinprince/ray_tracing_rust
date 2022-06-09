@@ -25,7 +25,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc: Vec3 = r.origin() - self.center;
         let a: f64 = r.direction().length_squared();
         let half_b: f64 = dot(&oc, &r.direction());
@@ -33,22 +33,26 @@ impl Hittable for Sphere {
         let discriminant = half_b * half_b - a * c;
 
         if discriminant < 0.0 {
-            return false;
+            return None;
         }
         let sqrtd: f64 = discriminant.sqrt();
         let mut root: f64 = (-half_b - sqrtd) / a;
-        let root_bounded = |root| -> bool { root < t_min || t_max < root };
-        if root_bounded(root) {
+        // let root_bounded = |root| -> bool { root < t_min || t_max < root };
+        if root < t_min || t_max < root {
             root = (-half_b + sqrtd) / a;
-            if root_bounded(root) {
-                return false;
+            if root < t_min || t_max < root {
+                return None;
             }
         }
 
-        rec.t = root;
-        rec.p = r.at(rec.t);
-        let outward_normal: Vec3 = (rec.p - self.center) / self.radius;
-        rec.set_face_normal(r, &outward_normal);
-        true
+        let mut hr = HitRecord {
+            t: root,
+            p: r.at(root),
+            normal: Vec3::new(),
+            front_face: false,
+        };
+        let outward_normal: Vec3 = (hr.p - self.center) / self.radius;
+        hr.set_face_normal(&r, outward_normal);
+        Some(hr)
     }
 }
