@@ -13,20 +13,16 @@ pub struct Vec3 {
 
 // constructor functions
 impl Vec3 {
-    pub fn new() -> Vec3 {
-        Vec3 { e: [0.0, 0.0, 0.0] }
-    }
-
-    pub fn set_values(self, e0: f64, e1: f64, e2: f64) -> Vec3 {
+    pub fn new(e0: f64, e1: f64, e2: f64) -> Vec3 {
         Vec3 { e: [e0, e1, e2] }
     }
 
     pub fn random() -> Vec3 {
-        Vec3::new().set_values(random_f64(), random_f64(), random_f64())
+        Vec3::new(random_f64(), random_f64(), random_f64())
     }
 
     pub fn random_in_range(range: std::ops::Range<f64>) -> Vec3 {
-        Vec3::new().set_values(
+        Vec3::new(
             random_f64_in_range(range.clone()),
             random_f64_in_range(range.clone()),
             random_f64_in_range(range),
@@ -54,6 +50,13 @@ impl Vec3 {
 
     pub fn length_squared(&self) -> f64 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+    }
+}
+
+impl Vec3 {
+    pub fn near_zero(&self) -> bool {
+        let s: f64 = 1e-8;
+        (self.e[0].abs() < s) && (self.e[1].abs() < s) && (self.e[2].abs() < s)
     }
 }
 
@@ -130,7 +133,7 @@ impl ops::Add for Vec3 {
 impl ops::Sub for Vec3 {
     type Output = Vec3;
     fn sub(self, rhs: Vec3) -> Self::Output {
-        Vec3::new().set_values(
+        Vec3::new(
             self.e[0] - rhs.e[0],
             self.e[1] - rhs.e[1],
             self.e[2] - rhs.e[2],
@@ -141,7 +144,7 @@ impl ops::Sub for Vec3 {
 impl ops::Mul for Vec3 {
     type Output = Vec3;
     fn mul(self, rhs: Vec3) -> Self::Output {
-        Vec3::new().set_values(
+        Vec3::new(
             self.e[0] * rhs.e[0],
             self.e[1] * rhs.e[1],
             self.e[2] * rhs.e[2],
@@ -152,7 +155,7 @@ impl ops::Mul for Vec3 {
 impl ops::Mul<Vec3> for f64 {
     type Output = Vec3;
     fn mul(self, rhs: Vec3) -> Self::Output {
-        Vec3::new().set_values(self * rhs.e[0], self * rhs.e[1], self * rhs.e[2])
+        Vec3::new(self * rhs.e[0], self * rhs.e[1], self * rhs.e[2])
     }
 }
 
@@ -175,7 +178,7 @@ pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
 }
 
 pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
-    Vec3::new().set_values(
+    Vec3::new(
         u.e[1] * v.e[2] - u.e[2] * v.e[1],
         u.e[2] * v.e[0] - u.e[0] * v.e[2],
         u.e[0] * v.e[1] - u.e[1] * v.e[0],
@@ -199,4 +202,8 @@ pub fn random_in_unit_sphere() -> Vec3 {
 
 pub fn random_unit_vector() -> Vec3 {
     unit_vector(random_in_unit_sphere())
+}
+
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - 2.0 * dot(&v, &n) * n
 }

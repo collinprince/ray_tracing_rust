@@ -1,24 +1,19 @@
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::*;
 
-#[derive(Clone, Copy)]
+use std::rc::Rc;
+
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
+    pub material: Rc<dyn Material>,
 }
 
 impl HitRecord {
-    pub fn new() -> HitRecord {
-        HitRecord {
-            p: Point3::new(),
-            normal: Vec3::new(),
-            t: 0.0,
-            front_face: false,
-        }
-    }
-
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
         self.front_face = dot(&r.direction(), &outward_normal) < 0.0;
         self.normal = if self.front_face {
@@ -26,12 +21,6 @@ impl HitRecord {
         } else {
             -outward_normal
         };
-    }
-    pub fn copy_from(&mut self, hr: &HitRecord) {
-        self.p = hr.p;
-        self.normal = hr.normal;
-        self.t = hr.t;
-        self.front_face = hr.front_face;
     }
 }
 
