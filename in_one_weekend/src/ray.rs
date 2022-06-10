@@ -8,14 +8,7 @@ pub struct Ray {
 
 // constructors & setters
 impl Ray {
-    pub fn new() -> Ray {
-        Ray {
-            orig: Point3::new(),
-            dir: Vec3::new(),
-        }
-    }
-
-    pub fn set_fields(self, o: Point3, d: Vec3) -> Ray {
+    pub fn new(o: Point3, d: Vec3) -> Ray {
         Ray { orig: o, dir: d }
     }
 }
