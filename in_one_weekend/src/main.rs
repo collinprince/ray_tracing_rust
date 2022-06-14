@@ -14,7 +14,7 @@ use hittable::Hittable;
 use hittable_list::HittableList;
 use material::*;
 use ray::Ray;
-use rtweekend::{random_f64, INFINITY};
+use rtweekend::{random_f64, INFINITY, PI};
 use sphere::Sphere;
 use vec3::{unit_vector, Color, Point3, Vec3};
 
@@ -74,7 +74,7 @@ fn main() {
     )));
     world.add(Box::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
-        -0.4,
+        -0.45,
         Rc::clone(&material_left),
     )));
     world.add(Box::new(Sphere::new(
@@ -84,7 +84,13 @@ fn main() {
     )));
 
     // camera
-    let cam: Camera = Camera::new();
+    let cam: Camera = Camera::new(
+        Point3::new(-2.0, 2.0, 1.0),
+        Point3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        90.0,
+        ASPECT_RATIO,
+    );
 
     // render
     print!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
