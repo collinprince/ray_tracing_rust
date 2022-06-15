@@ -6,11 +6,13 @@ mod tests {
     use in_one_weekend::vec3::*;
 
     use std::rc::Rc;
+    use std::sync::Arc;
 
     #[test]
     fn goes_through_sphere_test() {
         let origin: Point3 = Point3::new(0.0, 0.0, 0.0);
-        let m: Rc<dyn Material> = Rc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0)));
+        let m: Arc<dyn Material + Sync + Send> =
+            Arc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0)));
         let s: Sphere = Sphere::new(origin, 1.0, m);
 
         let dir: Vec3 = Vec3::new(1.0, 0.0, 0.0);
@@ -26,7 +28,8 @@ mod tests {
     #[test]
     fn does_not_hit_sphere_test() {
         let origin: Point3 = Point3::new(0.0, 0.0, 0.0);
-        let m: Rc<dyn Material> = Rc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0)));
+        let m: Arc<dyn Material + Sync + Send> =
+            Arc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0)));
         let s: Sphere = Sphere::new(origin, 1.0, m);
 
         let r_origin: Point3 = Point3::new(1.0, 2.0, 2.0);
@@ -40,7 +43,8 @@ mod tests {
     #[test]
     fn hits_at_one_point_test() {
         let origin: Point3 = Point3::new(0.0, 0.0, 0.0);
-        let m: Rc<dyn Material> = Rc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0)));
+        let m: Arc<dyn Material + Sync + Send> =
+            Arc::new(Lambertian::new(Color::new(0.0, 0.0, 0.0)));
         let s: Sphere = Sphere::new(origin, 1.0, m);
 
         let intersect_p: Point3 = Point3::new(0.0, 1.0, 0.0);

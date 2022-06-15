@@ -2,7 +2,7 @@ use crate::hittable::*;
 use crate::ray::Ray;
 
 pub struct HittableList {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Box<dyn Hittable + Sync + Send>>,
 }
 
 // constructors
@@ -12,7 +12,7 @@ impl HittableList {
     }
 
     #[allow(dead_code)]
-    pub fn initial_object(self, object: Box<dyn Hittable>) -> HittableList {
+    pub fn initial_object(self, object: Box<dyn Hittable + Sync + Send>) -> HittableList {
         HittableList {
             objects: vec![object],
         }
@@ -26,7 +26,7 @@ impl HittableList {
         self.objects.clear();
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
+    pub fn add(&mut self, object: Box<dyn Hittable + Sync + Send>) {
         self.objects.push(object);
     }
 }

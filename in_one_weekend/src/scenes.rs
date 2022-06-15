@@ -8,6 +8,7 @@ use crate::sphere::*;
 use crate::vec3::*;
 
 use std::rc::Rc;
+use std::sync::Arc;
 
 pub fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color {
     if depth <= 0 {
@@ -30,6 +31,7 @@ pub fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color {
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
+#[derive(Copy, Clone)]
 pub struct ImageSettings {
     pub aspect_ratio: f64,
     pub image_width: i32,
@@ -48,11 +50,12 @@ pub struct SceneSettings {
 fn random_scene() -> SceneSettings {
     let mut world: HittableList = HittableList::new();
 
-    let ground_material: Rc<dyn Material> = Rc::new(Lambertian::new(Color::new(0.5, 0.05, 0.5)));
+    let ground_material: Arc<dyn Material + Sync + Send> =
+        Arc::new(Lambertian::new(Color::new(0.5, 0.05, 0.5)));
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Rc::clone(&ground_material),
+        Arc::clone(&ground_material),
     )));
 
     let p: Point3 = Point3::new(4.0, 0.2, 0.0);
@@ -66,38 +69,38 @@ fn random_scene() -> SceneSettings {
             );
 
             if (center - p).length() > 0.9 {
-                let mat: Rc<dyn Material> = if choose_mat < 0.8 {
+                let mat: Arc<dyn Material + Sync + Send> = if choose_mat < 0.8 {
                     // diffuse
                     let albedo: Color = Color::random() * Color::random();
-                    Rc::new(Lambertian::new(albedo))
+                    Arc::new(Lambertian::new(albedo))
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo: Color = Color::random_in_range(0.5..1.0);
                     let fuzz: f64 = random_f64_in_range(0.0..0.5);
-                    Rc::new(Metal::new(albedo, fuzz))
+                    Arc::new(Metal::new(albedo, fuzz))
                 } else {
                     // glass
-                    Rc::new(Dielectric::new(1.5))
+                    Arc::new(Dielectric::new(1.5))
                 };
                 world.add(Box::new(Sphere::new(center, 0.2, mat)));
             }
         }
     }
 
-    let material_1 = Rc::new(Dielectric::new(1.5));
+    let material_1 = Arc::new(Dielectric::new(1.5));
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, 1.0, 0.0),
         1.0,
         material_1,
     )));
-    let material_2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material_2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     world.add(Box::new(Sphere::new(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
         material_2,
     )));
 
-    let material_3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+    let material_3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
     world.add(Box::new(Sphere::new(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
@@ -143,35 +146,38 @@ fn random_scene() -> SceneSettings {
 pub fn defocus_blur_scene() -> SceneSettings {
     let mut world: HittableList = HittableList::new();
 
-    let material_ground: Rc<dyn Material> = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center: Rc<dyn Material> = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let material_left: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
-    let material_right: Rc<dyn Material> = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
+    let material_ground: Arc<dyn Material + Sync + Send> =
+        Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center: Arc<dyn Material + Sync + Send> =
+        Arc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+    let material_left: Arc<dyn Material + Sync + Send> = Arc::new(Dielectric::new(1.5));
+    let material_right: Arc<dyn Material + Sync + Send> =
+        Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
 
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
-        Rc::clone(&material_ground),
+        Arc::clone(&material_ground),
     )));
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, 0.0, -1.0),
         0.5,
-        Rc::clone(&material_center),
+        Arc::clone(&material_center),
     )));
     world.add(Box::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
-        Rc::clone(&material_left),
+        Arc::clone(&material_left),
     )));
     world.add(Box::new(Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
         -0.45,
-        Rc::clone(&material_left),
+        Arc::clone(&material_left),
     )));
     world.add(Box::new(Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
         0.5,
-        Rc::clone(&material_right),
+        Arc::clone(&material_right),
     )));
 
     // image settings

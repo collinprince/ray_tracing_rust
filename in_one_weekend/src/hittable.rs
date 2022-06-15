@@ -3,6 +3,7 @@ use crate::ray::Ray;
 use crate::vec3::*;
 
 use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct HitRecord {
@@ -10,7 +11,7 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material + Sync + Send>,
 }
 
 impl HitRecord {
@@ -27,3 +28,5 @@ impl HitRecord {
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
+
+// unsafe impl Sync for Box<dyn Hittable> {}

@@ -11,6 +11,9 @@ pub struct Vec3 {
     pub e: [f64; 3],
 }
 
+unsafe impl Sync for Vec3 {}
+unsafe impl Send for Vec3 {}
+
 // constructor functions
 impl Vec3 {
     pub fn new(e0: f64, e1: f64, e2: f64) -> Vec3 {

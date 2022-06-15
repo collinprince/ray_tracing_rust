@@ -4,16 +4,17 @@ use crate::ray::Ray;
 use crate::vec3::*;
 
 use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material + Sync + Send>,
 }
 
 // constructor and setter functions
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64, material: Rc<dyn Material>) -> Sphere {
+    pub fn new(center: Vec3, radius: f64, material: Arc<dyn Material + Sync + Send>) -> Sphere {
         Sphere {
             center,
             radius,
@@ -48,7 +49,7 @@ impl Hittable for Sphere {
             p: r.at(root),
             normal: Vec3::new(0.0, 0.0, 0.0),
             front_face: false,
-            material: Rc::clone(&self.material),
+            material: Arc::clone(&self.material),
         };
         let outward_normal: Vec3 = (hr.p - self.center) / self.radius;
         hr.set_face_normal(&r, outward_normal);

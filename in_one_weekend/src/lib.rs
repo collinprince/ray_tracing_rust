@@ -7,4 +7,5 @@ pub mod ray;
 pub mod rtweekend;
 pub mod scenes;
 pub mod sphere;
+pub mod threaded;
 pub mod vec3;
