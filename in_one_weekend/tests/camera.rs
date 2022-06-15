@@ -12,6 +12,8 @@ mod tests {
             Vec3::new(0.0, 1.0, 0.0),
             90.0,
             16.0 / 9.0,
+            0.0,
+            1.0,
         );
         let r: Ray = cam.get_ray(0.0, 0.0);
         assert_eq!(r.origin(), Point3::new(0.0, 0.0, 0.0));
@@ -26,6 +28,8 @@ mod tests {
             Vec3::new(0.0, 1.0, 0.0),
             90.0,
             16.0 / 9.0,
+            0.0,
+            1.0,
         );
         let u: f64 = 0.5;
         let v: f64 = 0.9;

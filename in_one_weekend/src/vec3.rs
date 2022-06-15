@@ -214,3 +214,18 @@ pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f64) -> Vec3 {
     let r_out_parallel: Vec3 = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * n;
     r_out_perp + r_out_parallel
 }
+
+pub fn random_in_unit_disk() -> Vec3 {
+    loop {
+        let p: Vec3 = Vec3::new(
+            random_f64_in_range(-1.0..1.0),
+            random_f64_in_range(-1.0..1.0),
+            0.0,
+        );
+        if p.length_squared() >= 1.0 {
+            continue;
+        } else {
+            return p;
+        }
+    }
+}
