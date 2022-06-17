@@ -5,7 +5,6 @@ mod tests {
     use in_one_weekend::sphere::*;
     use in_one_weekend::vec3::*;
 
-    use std::rc::Rc;
     use std::sync::Arc;
 
     #[test]

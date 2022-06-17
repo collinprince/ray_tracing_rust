@@ -1,12 +1,19 @@
+use crate::clio::get_thread_parameters;
 use crate::color::write_color;
 use crate::ray::Ray;
 use crate::rtweekend::*;
-use crate::scenes::{self, ray_color, ImageSettings, SceneSettings};
+use crate::scenes::{ray_color, ImageSettings, SceneSettings};
 use crate::vec3::*;
 
+use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 use std::thread;
+
+pub struct ThreadParameters {
+    pub num_threads: usize,
+    pub lines_per_thread: usize,
+}
 
 pub struct ThreadInput {
     pub thread_idx: i32,
@@ -52,8 +59,11 @@ fn thread_work(thread_input: ThreadInput) {
     tx.send(v).unwrap();
 }
 
-pub fn multi_threaded() {
-    let scene_settings: SceneSettings = scenes::defocus_blur_scene();
+pub fn multi_threaded(scene_settings: SceneSettings, thread_params: ThreadParameters) {
+    let ThreadParameters {
+        num_threads,
+        lines_per_thread,
+    } = thread_params;
     let ImageSettings {
         aspect_ratio: _,
         image_width: _,
@@ -63,9 +73,6 @@ pub fn multi_threaded() {
     } = scene_settings.image_settings;
 
     let scene_settings: Arc<SceneSettings> = Arc::new(scene_settings);
-
-    let num_threads: usize = 4;
-    let lines_per_thread: usize = 8;
     // cycle_size: the amount of lines that will computed in a cycle
     // if all theads are able to compute lines_per_thread number of lines
     let cycle_size: usize = num_threads * lines_per_thread;
@@ -112,4 +119,55 @@ pub fn multi_threaded() {
             }
         }
     }
+}
+
+pub fn single_threaded(scene_settings: SceneSettings) {
+    let SceneSettings {
+        world,
+        cam,
+        image_settings,
+    } = scene_settings;
+    let ImageSettings {
+        image_height,
+        image_width,
+        samples_per_pixel,
+        max_depth,
+        ..
+    } = image_settings;
+
+    for j in (0..image_height).rev() {
+        eprint!("\rScanlines remaining: {j} ");
+        io::stderr().flush().unwrap();
+        for i in 0..image_width {
+            let mut pixel_color: Color = Color::new(0.0, 0.0, 0.0);
+            for _ in 0..samples_per_pixel {
+                let u: f64 = ((i as f64) + random_f64()) / ((image_width - 1) as f64);
+                let v: f64 = ((j as f64) + random_f64()) / ((image_height - 1) as f64);
+                let r: Ray = cam.get_ray(u, v);
+                pixel_color += ray_color(&r, &world, max_depth);
+            }
+            write_color(pixel_color, samples_per_pixel);
+        }
+    }
+}
+
+// handle getting commandline multithreading parameters,
+// then calling associated single or multithreaded behavior
+pub fn render(scene_settings: SceneSettings) {
+    // print image header
+    print!(
+        "P3\n{} {}\n255\n",
+        scene_settings.image_settings.image_width, scene_settings.image_settings.image_height
+    );
+
+    // get parameters for multi threading if given
+    let thread_params: ThreadParameters = get_thread_parameters();
+
+    if thread_params.num_threads == 1 {
+        single_threaded(scene_settings);
+    } else {
+        multi_threaded(scene_settings, thread_params);
+    }
+
+    eprintln!("\nDone.");
 }

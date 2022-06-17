@@ -7,7 +7,6 @@ use crate::rtweekend::*;
 use crate::sphere::*;
 use crate::vec3::*;
 
-use std::rc::Rc;
 use std::sync::Arc;
 
 pub fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color {
@@ -47,7 +46,8 @@ pub struct SceneSettings {
 }
 
 // final render scene from in one weekend edition
-fn random_scene() -> SceneSettings {
+#[allow(dead_code)]
+pub fn random_scene() -> SceneSettings {
     let mut world: HittableList = HittableList::new();
 
     let ground_material: Arc<dyn Material + Sync + Send> =
